@@ -6,15 +6,15 @@
     <title>Screening Tool</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f8ff;
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fc;
             margin: 0;
             padding: 0;
             color: #333;
         }
         header {
-            background-color: #007BFF;
-            color: #fff;
+            background-color: #0056b3;
+            color: white;
             text-align: center;
             padding: 15px 0;
             font-size: 24px;
@@ -23,25 +23,26 @@
         form {
             max-width: 800px;
             margin: 20px auto;
-            background: #fff;
-            border-radius: 8px;
+            background: white;
+            border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         label {
             font-weight: bold;
             display: block;
             margin-bottom: 5px;
         }
-        input[type="text"], input[type="number"], input[type="date"] {
+        input[type="text"], input[type="date"] {
             width: calc(100% - 20px);
             padding: 10px;
             margin-bottom: 20px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 5px;
+            font-size: 16px;
         }
         input[type="text"]:read-only {
-            background-color: #f9f9f9;
+            background-color: #f1f1f1;
         }
         .question {
             margin-bottom: 20px;
@@ -55,21 +56,21 @@
             margin-right: 10px;
         }
         button {
-            background-color: #007BFF;
+            background-color: #0056b3;
             color: white;
             padding: 10px 20px;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #003d80;
         }
         footer {
             text-align: center;
             padding: 10px 0;
-            background-color: #007BFF;
+            background-color: #0056b3;
             color: white;
             font-size: 14px;
             position: fixed;
@@ -78,31 +79,23 @@
         }
         .toast {
             visibility: hidden;
-            max-width: 300px;
-            margin: auto;
+            max-width: 400px;
             background-color: #f44336;
             color: white;
             text-align: center;
-            border-radius: 4px;
-            padding: 16px;
+            border-radius: 5px;
+            padding: 15px;
             position: fixed;
             z-index: 1;
             left: 50%;
-            bottom: 30px;
+            bottom: -100px;
             transform: translateX(-50%);
-            animation: fadeout 2.5s forwards;
+            transition: all 0.7s ease-in-out;
         }
         .toast.show {
             visibility: visible;
-            animation: fadein 0.5s, fadeout 2.5s 1s forwards;
-        }
-        @keyframes fadein {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes fadeout {
-            from { opacity: 1; }
-            to { opacity: 0; }
+            bottom: 30px;
+            transition: all 0.7s ease-in-out;
         }
     </style>
 </head>
@@ -115,7 +108,7 @@
         <input type="text" id="name" name="name" required>
         
         <label for="dob">Date of Birth:</label>
-        <input type="date" id="dob" name="dob" required onchange="calculateAge()">
+        <input type="date" id="dob" name="dob" required onchange="validateDOB()">
         
         <label for="age">Age:</label>
         <input type="text" id="age" name="age" readonly>
@@ -135,6 +128,27 @@
             <input type="radio" name="q2" value="2"> 2
             <input type="radio" name="q2" value="3"> 3
         </div>
+        <div class="question">
+            <label>3. Does the child show signs of hyperactivity?</label>
+            <input type="radio" name="q3" value="0" required> 0
+            <input type="radio" name="q3" value="1"> 1
+            <input type="radio" name="q3" value="2"> 2
+            <input type="radio" name="q3" value="3"> 3
+        </div>
+        <div class="question">
+            <label>4. Does the child have trouble making friends?</label>
+            <input type="radio" name="q4" value="0" required> 0
+            <input type="radio" name="q4" value="1"> 1
+            <input type="radio" name="q4" value="2"> 2
+            <input type="radio" name="q4" value="3"> 3
+        </div>
+        <div class="question">
+            <label>5. Does the child often appear sad or withdrawn?</label>
+            <input type="radio" name="q5" value="0" required> 0
+            <input type="radio" name="q5" value="1"> 1
+            <input type="radio" name="q5" value="2"> 2
+            <input type="radio" name="q5" value="3"> 3
+        </div>
 
         <div>
             <button type="button" onclick="validateForm()">Calculate Total</button>
@@ -148,27 +162,41 @@
         &copy; 2024 Yuvi Choudhary | TEAM SANKI
     </footer>
 
-    <div class="toast" id="toast">Please fill in all child details first!</div>
+    <div class="toast" id="toast">Please fill in valid details!</div>
 
     <script>
-        function calculateAge() {
+        function validateDOB() {
             const dob = document.getElementById('dob').value;
-            if (dob) {
-                const dobDate = new Date(dob);
-                const today = new Date();
-                let age = today.getFullYear() - dobDate.getFullYear();
-                const monthDiff = today.getMonth() - dobDate.getMonth();
-                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
-                    age--;
-                }
-                document.getElementById('age').value = age;
+            const dobYear = new Date(dob).getFullYear();
+            const today = new Date();
+            const currentYear = today.getFullYear();
+
+            if (dobYear < 1978 || dobYear > currentYear) {
+                showToast("Please enter a valid date of birth (1978 or later).");
+                document.getElementById('dob').value = "";
+                document.getElementById('age').value = "";
+                return;
             }
+
+            calculateAge();
         }
 
-        function showToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+        function calculateAge() {
+            const dob = document.getElementById('dob').value;
+            const today = new Date();
+            const dobDate = new Date(dob);
+            let age = today.getFullYear() - dobDate.getFullYear();
+            const monthDiff = today.getMonth() - dobDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+                age--;
+            }
+            if (age < 0) {
+                showToast("Age cannot be negative.");
+                document.getElementById('dob').value = "";
+                document.getElementById('age').value = "";
+                return;
+            }
+            document.getElementById('age').value = age;
         }
 
         function validateForm() {
@@ -177,7 +205,7 @@
             const age = document.getElementById('age').value.trim();
 
             if (!name || !dob || !age) {
-                showToast();
+                showToast("Please fill in all details before calculating the total.");
                 return;
             }
             calculateTotal();
@@ -185,16 +213,23 @@
 
         function calculateTotal() {
             let total = 0;
-            const questions = ['q1', 'q2'];
-            
+            const questions = ['q1', 'q2', 'q3', 'q4', 'q5'];
             questions.forEach(question => {
                 const selectedOption = document.querySelector(`input[name="${question}"]:checked`);
                 if (selectedOption) {
                     total += parseInt(selectedOption.value);
                 }
             });
-
             document.getElementById('totalScore').value = total;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 7000);
         }
     </script>
 </body>
