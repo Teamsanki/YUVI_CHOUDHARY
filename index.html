@@ -76,6 +76,34 @@
             bottom: 0;
             width: 100%;
         }
+        .toast {
+            visibility: hidden;
+            max-width: 300px;
+            margin: auto;
+            background-color: #f44336;
+            color: white;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            animation: fadeout 2.5s forwards;
+        }
+        .toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 2.5s 1s forwards;
+        }
+        @keyframes fadein {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeout {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -107,30 +135,9 @@
             <input type="radio" name="q2" value="2"> 2
             <input type="radio" name="q2" value="3"> 3
         </div>
-        <div class="question">
-            <label>3. Does the child show signs of hyperactivity?</label>
-            <input type="radio" name="q3" value="0" required> 0
-            <input type="radio" name="q3" value="1"> 1
-            <input type="radio" name="q3" value="2"> 2
-            <input type="radio" name="q3" value="3"> 3
-        </div>
-        <div class="question">
-            <label>4. Does the child have trouble making friends?</label>
-            <input type="radio" name="q4" value="0" required> 0
-            <input type="radio" name="q4" value="1"> 1
-            <input type="radio" name="q4" value="2"> 2
-            <input type="radio" name="q4" value="3"> 3
-        </div>
-        <div class="question">
-            <label>5. Does the child often appear sad or withdrawn?</label>
-            <input type="radio" name="q5" value="0" required> 0
-            <input type="radio" name="q5" value="1"> 1
-            <input type="radio" name="q5" value="2"> 2
-            <input type="radio" name="q5" value="3"> 3
-        </div>
 
         <div>
-            <button type="button" onclick="calculateTotal()">Calculate Total</button>
+            <button type="button" onclick="validateForm()">Calculate Total</button>
         </div>
         
         <label for="totalScore" style="margin-top: 20px;">Total Score:</label>
@@ -140,6 +147,8 @@
     <footer>
         &copy; 2024 Yuvi Choudhary | TEAM SANKI
     </footer>
+
+    <div class="toast" id="toast">Please fill in all child details first!</div>
 
     <script>
         function calculateAge() {
@@ -156,9 +165,27 @@
             }
         }
 
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function validateForm() {
+            const name = document.getElementById('name').value.trim();
+            const dob = document.getElementById('dob').value.trim();
+            const age = document.getElementById('age').value.trim();
+
+            if (!name || !dob || !age) {
+                showToast();
+                return;
+            }
+            calculateTotal();
+        }
+
         function calculateTotal() {
             let total = 0;
-            const questions = ['q1', 'q2', 'q3', 'q4', 'q5'];
+            const questions = ['q1', 'q2'];
             
             questions.forEach(question => {
                 const selectedOption = document.querySelector(`input[name="${question}"]:checked`);
